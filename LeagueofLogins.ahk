@@ -1,19 +1,19 @@
-	#SingleInstance force
-	#Persistent
-	SendMode Input
-	SetKeyDelay, 0, 0
-	OnExit, Exiting
-	Menu, Tray, Icon, LeagueofLogins.exe, , 1
-	Menu, Tray, Tip, League of Logins
+  #SingleInstance force
+  #Persistent
+  SendMode Input
+  SetKeyDelay, 0, 0
+  OnExit, Exiting
+  Menu, Tray, Icon, LeagueofLogins.exe, , 1
+  Menu, Tray, Tip, League of Logins
   Menu, Tray, NoStandard
   Menu, Tray, add, Exit
   TrayTip, League of Logins, Right click the tray icon to select your accounts
 
-	global name := "LeagueofLogins"
-	global workingDir := A_Temp "\%A_ScriptName%"
+  global name := "LeagueofLogins"
+  global workingDir := A_Temp "\%A_ScriptName%"
   FileCreateDir, %workingDir%
   FileCreateDir, % A_MyDocuments "\" name
-	checkUpdate(7)
+  checkUpdate(7)
   global Pin := A_UserName
   global loginFile := A_MyDocuments "\" name "\" A_UserName ".txt"
   global Array := Object()
@@ -61,28 +61,28 @@ trash:
 Return
 
 Yes:
-	MsgBox, %name% will now start with windows
-	FileCreateShortcut, %A_ScriptFullPath%, %A_AppData%\Microsoft\Windows\Start Menu\Programs\Startup\%name%.lnk
+  MsgBox, %name% will now start with windows
+  FileCreateShortcut, %A_ScriptFullPath%, %A_AppData%\Microsoft\Windows\Start Menu\Programs\Startup\%name%.lnk
 return
 No:
-	MsgBox, %name% will no longer start with windows
-	FileDelete, %A_AppData%\Microsoft\Windows\Start Menu\Programs\Startup\%name%.lnk
+  MsgBox, %name% will no longer start with windows
+  FileDelete, %A_AppData%\Microsoft\Windows\Start Menu\Programs\Startup\%name%.lnk
 return
 
 login:
-    If WinExist("PVP.net Client") or WinExist("ahk_exe LeagueClientUx.exe")
-    {
-      WinActivate, PVP.net Client
-      WinActivate, ahk_exe LeagueClientUx.exe
-      MouseClick, left, 1090, 190, 2, 0
-      SendRaw % A_ThisMenuItem
-      MouseClick, left, 1090, 250, 2, 0
-      SendRaw % AES.Decrypt(Array[A_ThisMenuItem], Pin, 256)
-      Sleep, 500
-      MouseClick, Left, 1080, 535, 1,0
-    }
-    Else
-      MsgBox, Cannot find League of Legends client.
+  If WinExist("PVP.net Client") or WinExist("ahk_exe LeagueClientUx.exe")
+  {
+    WinActivate, PVP.net Client
+    WinActivate, ahk_exe LeagueClientUx.exe
+    MouseClick, left, 1090, 190, 2, 0
+    SendRaw % A_ThisMenuItem
+    MouseClick, left, 1090, 250, 2, 0
+    SendRaw % AES.Decrypt(Array[A_ThisMenuItem], Pin, 256)
+    Sleep, 500
+    MouseClick, Left, 1080, 535, 1,0
+  }
+  Else
+    MsgBox, Cannot find League of Legends client.
 return
 
 add:
