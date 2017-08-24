@@ -10,6 +10,7 @@
   TrayTip, League of Logins, Right click the tray icon to select your accounts
 
   global name := "LeagueofLogins"
+  global displayName := "League of Logins"
   global workingDir := A_Temp "\%A_ScriptName%"
   FileCreateDir, %workingDir%
   FileCreateDir, % A_MyDocuments "\" name
@@ -18,6 +19,11 @@
   global loginFile := A_MyDocuments "\" name "\" A_UserName ".txt"
   global Array := Object()
   getLogins()
+
+  IfNotExist, %A_AppData%\Microsoft\Windows\Start Menu\Programs\Startup\%name%.lnk
+  MsgBox, 4, %displayName%, Do you want %displayName% to start automatically with Windows?
+  IfMsgBox Yes
+    Gosub, Yes
 Return
 
 GuiClose:
@@ -61,11 +67,11 @@ trash:
 Return
 
 Yes:
-  MsgBox, %name% will now start with windows
+  MsgBox, 0, %displayName%, %displayName% will now start with windows
   FileCreateShortcut, %A_ScriptFullPath%, %A_AppData%\Microsoft\Windows\Start Menu\Programs\Startup\%name%.lnk
 return
 No:
-  MsgBox, %name% will no longer start with windows
+  MsgBox, 0, %displayName%, %displayName% will no longer start with windows
   FileDelete, %A_AppData%\Microsoft\Windows\Start Menu\Programs\Startup\%name%.lnk
 return
 
