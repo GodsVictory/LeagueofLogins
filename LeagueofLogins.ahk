@@ -13,7 +13,7 @@
 	global workingDir := A_Temp "\%A_ScriptName%"
   FileCreateDir, %workingDir%
   FileCreateDir, % A_MyDocuments "\" name
-	checkUpdate(6)
+	checkUpdate(7)
   global Pin := A_UserName
   global loginFile := A_MyDocuments "\" name "\" A_UserName ".txt"
   global Array := Object()
