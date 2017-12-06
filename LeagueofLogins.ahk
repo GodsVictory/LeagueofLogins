@@ -85,7 +85,7 @@ login:
     MouseClick, left, 1090, 250, 2, 0
     SendRaw % AES.Decrypt(Array[A_ThisMenuItem], Pin, 256)
     Sleep, 500
-    MouseClick, Left, 1080, 535, 1,0
+    MouseClick, Left, 1080, 555, 1,0
   }
   Else
     MsgBox, Cannot find League of Legends client.
