@@ -1,160 +1,150 @@
-  #SingleInstance force
-  #Persistent
-  SendMode Input
-  SetKeyDelay, 0, 0
-  OnExit, Exiting
-  Menu, Tray, Icon, LeagueofLogins.exe, , 1
-  Menu, Tray, Tip, League of Logins
-  Menu, Tray, NoStandard
-  Menu, Tray, add, Exit
-  TrayTip, League of Logins, Right click the tray icon to select your accounts
-
-  global name := "LeagueofLogins"
-  global displayName := "League of Logins"
-  global workingDir := A_Temp "\%A_ScriptName%"
+	#SingleInstance force
+	#Persistent
+	SetKeyDelay, 0, 0
+	OnExit, Exiting
+	Menu, Tray, Icon, LeagueofLogins.exe, , 1
+	Menu, Tray, Tip, LeagueofLogins
+	global name := "LeagueofLogins"
+  global ahkexe := "LeagueClientUx.exe"
+	global workingDir := A_Temp "\" A_ScriptName
   FileCreateDir, %workingDir%
-  FileCreateDir, % A_MyDocuments "\" name
-  checkUpdate(7)
-  global Pin := A_UserName
-  global loginFile := A_MyDocuments "\" name "\" A_UserName ".txt"
-  global Array := Object()
-  getLogins()
-
-  IfNotExist, %A_AppData%\Microsoft\Windows\Start Menu\Programs\Startup\%name%.lnk
-  MsgBox, 4, %displayName%, Do you want %displayName% to start automatically with Windows?
-  IfMsgBox Yes
-    Gosub, Yes
+	Menu, Tray, NoStandard
+	Menu, Tray, add, Exit
+  TrayTip, LeagueofLogins, Right click the tray icon to select your accounts
+	global loginFile := A_MyDocuments "\LeagueofLogins\login.txt"
+  global loginDir := A_MyDocuments "\LeagueofLogins"
+  IfNotExist %loginDir%
+    FileCreateDir, %loginDir%
+	global file
+	IfExist, %loginFile%
+		FileRead, file, %loginFile%
+	global Array := []
+	getLogins()
 Return
-
-GuiClose:
-GuiEscape:
-ExitApp
 
 Exit:
 ExitApp
 
 getLogins()
-{
-  Menu, Delete, add, trash, trash
-  Menu, Delete, DeleteAll
-  Menu, Autostart, add, trash, trash
-  Menu, Autostart, DeleteAll
-  Menu, Tray, DeleteAll
-  Menu, Tray, NoStandard
-  Loop, Read, %loginFile%
   {
-    StringSplit, login, A_LoopReadLine, :
-    if login1
+    global array := []
+    Menu, Delete, add, trash, trash
+    Menu, Delete, DeleteAll
+    Menu, Autostart, add, trash, trash
+    Menu, Autostart, DeleteAll
+    Menu, Tray, DeleteAll
+    Menu, Tray, NoStandard
+    Loop Parse, file, `n
     {
-      Menu, Tray, add, %login1%, login
-      Menu, Delete, add, %login1%, Delete
-      Array[login1] := login2
+      StringSplit, login, A_LoopField, :
+      if login1
+		  {
+        Menu, Tray, add, %login1%, login
+        Menu, Delete, add, %login1%, Delete
+        array.push(A_LoopField)
+		  }
     }
+    Menu, Tray, add
+    Menu, Tray, add, Add
+    Menu, Tray, add
+    Menu, Tray, add, Delete, :Delete
+    Menu, Tray, add
+    Menu, Autostart, Add, Yes
+    Menu, Autostart, Add, No
+    Menu, tray, add, Autostart, :Autostart
+    Menu, Tray, add
+    Menu, Tray, add, Exit
   }
-  Menu, Tray, add
-  Menu, Tray, add, Add
-  Menu, Tray, add
-  Menu, Tray, add, Delete, :Delete
-  Menu, Tray, add
-  Menu, Autostart, Add, Yes
-  Menu, Autostart, Add, No
-  Menu, tray, add, Autostart, :Autostart
-  Menu, Tray, add
-  Menu, Tray, add, Exit
-}
 
 trash:
 Return
 
 Yes:
-  MsgBox, 0, %displayName%, %displayName% will now start with windows
-  FileCreateShortcut, %A_ScriptFullPath%, %A_AppData%\Microsoft\Windows\Start Menu\Programs\Startup\%name%.lnk
+	MsgBox, %name% will now start with windows
+	FileCreateShortcut, %A_ScriptFullPath%, %A_AppData%\Microsoft\Windows\Start Menu\Programs\Startup\%name%.lnk
 return
 No:
-  MsgBox, 0, %displayName%, %displayName% will no longer start with windows
-  FileDelete, %A_AppData%\Microsoft\Windows\Start Menu\Programs\Startup\%name%.lnk
+	MsgBox, %name% will no longer start with windows
+	FileDelete, %A_AppData%\Microsoft\Windows\Start Menu\Programs\Startup\%name%.lnk
 return
 
 login:
-  If WinExist("PVP.net Client") or WinExist("ahk_exe LeagueClientUx.exe")
-  {
-    WinActivate, PVP.net Client
-    WinActivate, ahk_exe LeagueClientUx.exe
-    MouseClick, left, 1090, 190, 2, 0
-    SendRaw % A_ThisMenuItem
-    MouseClick, left, 1090, 250, 2, 0
-    SendRaw % AES.Decrypt(Array[A_ThisMenuItem], Pin, 256)
-    Sleep, 500
-    MouseClick, Left, 1080, 555, 1,0
-  }
-  Else
-    MsgBox, Cannot find League of Legends client.
+    IfWinExist, ahk_exe %ahkexe%
+      {
+        WinActivate, ahk_exe %ahkexe%
+        MouseClick, left, 1250, 700, 10,0
+        ;Sleep 300
+        Send +{Tab}
+        Send +{Tab}
+        Send +{Tab}
+        Send +{Tab}
+        ;Sleep 300
+        Send % A_ThisMenuItem
+        Send {Tab}
+        ;Sleep 300
+        for index, element in array
+        {
+          StringSplit, login, element, :
+          if login1 = %A_ThisMenuItem%
+          {
+            pw:= login2
+            break
+          }
+        }
+        Send % AES.Decrypt(pw, A_UserName, 256)
+        Send {Enter}
+      }
+    Else
+        TrayTip, %name%, Cannot find the client.
 return
 
 add:
-  Gui -Resize -MaximizeBox -MinimizeBox +AlwaysOnTop
-  global User
-  global Pass
-  Gui Add, Edit, w200 vUser, Username
-  Gui Add, Edit, w200 vPass Password, Password
-  Gui Add, Button, w200 Default, Submit
-  Gui Add, Button, w200, Cancel
-  Gui Show,, League of Logins
+    Gui -Resize -MaximizeBox -MinimizeBox +AlwaysOnTop
+    global User
+    global Pass
+    Gui Add, Edit, w200 vUser, Username
+    Gui Add, Edit, w200 vPass Password, Password
+    Gui Add, Button, w200 Default, Submit
+    Gui Add, Button, w200, Cancel
+    Gui Show,, %name%
 return
+
 ButtonSubmit:
   Gui, Submit
   Gui, Destroy
-  FileAppend, % User . ":" . AES.Encrypt(Pass, Pin, 256) . "`n", %loginFile%
+  if file
+	  file .= "`n" . User . ":" . AES.Encrypt(Pass, A_UserName, 256)
+  else
+	  file .= User . ":" . AES.Encrypt(Pass, A_UserName, 256)
+  FileDelete, %loginFile%
+  FileAppend, %file%, %loginFile%
   getLogins()
 Return
+
 ButtonCancel:
   Gui, Destroy
 Return
 
 delete:
-  Loop, Read, %loginFile%
-  {
-    StringSplit, login, A_LoopReadLine, :
-    if login1
-    {
-      if (login1 != A_ThisMenuItem)
-      {
-        file .= A_LoopReadLine . "`n"
-      }
-    }
-  }
-  FileDelete, %loginFile%
-  FileAppend, %file%, %loginFile%
-  file := ""
-  getLogins()
+    file := RegExReplace(file, "U`a)(^|\R)\K.*" A_ThisMenuItem ".*(\R|$)")
+    FileDelete, %loginFile%
+    FileAppend, %file%, %loginFile%
+    getLogins()
 return
 
 Exiting:
   FileRemoveDir, %workingDir%, 1
   ExitApp
 
-checkUpdate(currentVersion)
-{
-  FileInstall, Updater.exe, %workingDir%\Updater.exe
-  UrlDownloadToFile, https://raw.githubusercontent.com/GodsVictory/LeagueofLogins/master/version.txt, %workingDir%\version.txt
-  loop, Read, %workingDir%\version.txt
-    version := A_LoopReadLine
-  if (currentVersion < version)
-  {
-    TrayTip, %A_ScriptName%, Updating...
-    Run, %workingDir%\Updater.exe "https://raw.githubusercontent.com/GodsVictory/LeagueofLogins/master/LeagueofLogins.exe" "%A_ScriptFullPath%"
-    ExitApp
-  }
-}
 
 Class AES
-{
-  Encrypt(string, Password, alg)
   {
-    len := this.StrPutVar(string, str_buf, 0, "UTF-16")
-    this.Crypt(str_buf, len, Password, alg, 1)
-    Return this.b64Encode(str_buf, len)
-  }
+    Encrypt(string, Password, alg)
+    {
+      len := this.StrPutVar(string, str_buf, 0, "UTF-16")
+      this.Crypt(str_buf, len, Password, alg, 1)
+      Return this.b64Encode(str_buf, len)
+    }
   Decrypt(string, Password, alg)
   {
     len := this.b64Decode(string, encr_Buf)
@@ -162,7 +152,7 @@ Class AES
     sLen /= 2
     Return StrGet(&encr_Buf, sLen, "UTF-16")
   }
-  Crypt(ByRef encr_Buf, ByRef Buf_Len, password, ALG_ID, CryptMode := 1)
+Crypt(ByRef encr_Buf, ByRef Buf_Len, password, ALG_ID, CryptMode := 1)
   {
     static MS_ENH_RSA_AES_PROV := "Microsoft Enhanced RSA and AES Cryptographic Provider"
     static PROV_RSA_AES        := 24
@@ -196,7 +186,7 @@ Class AES
     DllCall("advapi32.dll\CryptReleaseContext", "Ptr", hProv, "UInt", 0)
     Return Buf_Len
   }
-  StrPutVar(string, ByRef var, addBufLen := 0, encoding := "UTF-16")
+StrPutVar(string, ByRef var, addBufLen := 0, encoding := "UTF-16")
   {
     tlen := ((encoding = "UTF-16" || encoding = "CP1200") ? 2 : 1)
     str_len := StrPut(string, encoding) * tlen
@@ -204,7 +194,7 @@ Class AES
     StrPut(string, &var, encoding)
     Return str_len - tlen
   }
-  b64Encode(ByRef VarIn, SizeIn)
+b64Encode(ByRef VarIn, SizeIn)
   {
     static CRYPT_STRING_BASE64 := 0x00000001
     static CRYPT_STRING_NOCRLF := 0x40000000
@@ -213,7 +203,7 @@ Class AES
     DllCall("crypt32.dll\CryptBinaryToStringA", "Ptr", &VarIn, "UInt", SizeIn, "Uint", (CRYPT_STRING_BASE64 | CRYPT_STRING_NOCRLF), "Ptr", &VarOut, "UInt*", SizeOut)
     Return StrGet(&VarOut, SizeOut, "CP0")
   }
-  b64Decode(ByRef VarIn, ByRef VarOut)
+b64Decode(ByRef VarIn, ByRef VarOut)
   {
     static CRYPT_STRING_BASE64 := 0x00000001
     static CryptStringToBinary := "CryptStringToBinary" (A_IsUnicode ? "W" : "A")
